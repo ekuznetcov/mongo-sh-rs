@@ -1,0 +1,47 @@
+version: "3.6"
+volumes:
+  mongos_vol:
+    driver: local
+  mongo_vol_config:
+    driver: local
+  mongo_vol_shard_1:
+    driver: local
+  mongo_vol_shard_2:
+    driver: local
+services:
+  mongos:
+    image: mongo:4.4
+    command: mongos --configdb rs1/mongo-config:27017
+    volumes:
+      - mongos_vol:/data/db
+    ports:
+      - "27020:27017"
+    depends_on:
+      - mongo-config
+
+  mongo-config:
+    image: mongo:4.4
+    command: mongod --configsvr
+    volumes:
+      - mongo_vol_config:/data/db
+    ports:
+      - "27021:27017"
+    depends_on:
+      - mongodb-shard1
+      - mongodb-shard2
+
+  mongodb-shard1:
+    image: mongo:4.4
+    command: mongod
+    volumes:
+      - mongo_vol_shard_1:/data/db
+    ports:
+      - "27022:27017"
+
+  mongodb-shard2:
+    image: mongo:4.4
+    command: mongod
+    volumes:
+      - mongo_vol_shard_2:/data/db
+    ports:
+      - "27023:27017"
